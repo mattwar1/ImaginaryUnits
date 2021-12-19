@@ -28,12 +28,13 @@ def gpio_init():
     GPIO.setwarnings(False)
     GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
-# set direction (IN / OUT)    
+    # set direction (IN / OUT)    
     GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
     GPIO.setup(GPIO_ECHO, GPIO.IN)
     GPIO.setup(LED_GREEN, GPIO.OUT)
     GPIO.setup(LED_RED, GPIO.OUT)
 
+#def led changing function
 def led_change(occupied):
     if not occupied:
         GPIO.output(LED_GREEN, GPIO.HIGH)
@@ -45,7 +46,7 @@ def led_change(occupied):
         print("That shouldn't have happened\n")
 
 
-#def sensor function# 
+#def sensor function
 def distance():
     # set Trigger to HIGH
     GPIO.output(GPIO_TRIGGER, True)
@@ -73,11 +74,7 @@ def distance():
  
     return distance
 
-def main(DATA_TO_SEND):
-    # print(" +--------------------------------------+")
-    # print(" | XBee Python Library Send Data Sample |")
-    # print(" +--------------------------------------+\n")
-
+def xbee_transmit(DATA_TO_SEND):
     device = XBeeDevice(PORT, BAUD_RATE)
     remote = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string(COORDINATOR_ID))
 
@@ -92,17 +89,12 @@ def main(DATA_TO_SEND):
             print("Could not find the remote device")
             return None
 
-        print("Sending data to %s >> %s..." % (COORDINATOR_ID, DATA_TO_SEND))
+        # print("Sending data to %s >> %s..." % (COORDINATOR_ID, DATA_TO_SEND))
         device.send_data(remote, DATA_TO_SEND)
-        
-        # while True:
-        #     print("Sending data to %s >> %s..." % ("0013A20040E441E5", DATA_TO_SEND))
-        #     device.send_data(remote, DATA_TO_SEND)
-        #     time.sleep(2)
-        #     print("Success")     
+                  
     finally:
         if device is not None and device.is_open():
-            print("XBee device is not connected, can't send the data")
+            # print("XBee device is not connected, can't send the data")
             device.close()
 
 # check i-times if measurment is stable
@@ -114,10 +106,7 @@ def chceck_measurment(i):
         i = i - 1
     return  a / b
 
-
-
-if __name__ == '__main__':
-    gpio_init()
+def main():
     try:
         while True:
             occupation_status = False
@@ -127,7 +116,7 @@ if __name__ == '__main__':
             while(ERR!=True):
                 time.sleep(1)
                 a = distance()
-                print ("Measured Distance = %.1f cm" % a)
+                # print ("Measured Distance = %.1f cm" % a)
                 while True:
                     if(a <= SENSOR_MIN): 
                          if(error_staus == True):
@@ -135,9 +124,9 @@ if __name__ == '__main__':
                          elif(error_staus == False):
                             a = chceck_measurment(10)
                             if(a <= SENSOR_MIN):
-                                print("To close")
+                                # print("To close")
                                 error_staus = True
-                                main("Error: to close")
+                                xbee_transmit("2")
                                 print(error_staus)
                                 break
                             else:
@@ -147,17 +136,12 @@ if __name__ == '__main__':
                             break
                         elif(occupation_status == False):
                             a = chceck_measurment(10)
-                            #i = 10
-                            #while(i > 0):
-                            #    a = a + distance()
-                            #    i = i - 1
-                            #a = a / 10
                             if(a <= LENGTH_OCCUPIED):
                                 occupation_status = True
                                 led_change(occupation_status)
-                                main("place occupied")
+                                xbee_transmit("1") #place occupied
                                 print ("Measured Distance = %.1f cm" % a)
-                                print ( occupation_status)
+                                # print ( occupation_status)
                                 break
                             else:
                                 break
@@ -171,9 +155,9 @@ if __name__ == '__main__':
                                 
                                 occupation_status=False
                                 led_change(occupation_status)
-                                main("place not occupied")
+                                xbee_transmit("0")
                                 print ("Measured Distance = %.1f cm" % a)
-                                print (occupation_status)
+                                # print (occupation_status)
                                 break
                             else: 
                                 break
@@ -185,7 +169,7 @@ if __name__ == '__main__':
                             if(a > SENSOR_MAX):
                                 print("To far")
                                 error_staus = True
-                                main("Error: to far")
+                                xbee_transmit("3")
                                 print(error_staus)
                                 break
                             else:
@@ -195,29 +179,6 @@ if __name__ == '__main__':
         print("Measurement stopped by User")
         GPIO.cleanup()
 
-
-
-
-                    # dist = distance()
-            # print ("Measured Distance = %.1f cm" % dist)
-            # time.sleep(1.5)
-        # Reset by pressing CTRL + C
-
-                    # if(a <= SENSOR_MIN): 
-                    #     if(error_staus == True):
-                    #         break
-                    #     elif(error_staus == False):
-                    #         i = 10
-                    #         while(i > 0):
-                    #             a = a + distance()
-                    #             i = i - 1
-                    #         a = a / 10
-                    #         if(a <= LENGTH_OCCUPIED):
-                    #             occupation_status = True
-                    #             led_change(occupation_status)
-                    #             main("place occupied")
-                    #             print ("Measured Distance = %.1f cm" % a)
-                    #             print ( occupation_status)
-                    #             break
-                    #         else:
-                    #             break
+if __name__ == '__main__':
+    gpio_init()
+    main()
