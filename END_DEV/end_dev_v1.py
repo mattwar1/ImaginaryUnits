@@ -3,7 +3,7 @@ import time
 from digi.xbee.devices import XBeeDevice, RemoteXBeeDevice,XBee64BitAddress
 
 # TODO: Replace with the serial port where your local module is connected to.
-PORT = "/dev/ttyUSB0"
+PORT = "/dev/ttyS0"
 # TODO: Replace with the baud rate of your local module.
 BAUD_RATE = 9600
 COORDINATOR_ID = "0013A20040E441E5"
