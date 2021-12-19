@@ -141,7 +141,7 @@ def main():
                                 led_change(occupation_status)
                                 xbee_transmit("1") #place occupied
                                 print ("Measured Distance = %.1f cm" % a)
-                                # print ( occupation_status)
+                                print ("Status changed, now occupied: ",occupation_status)
                                 break
                             else:
                                 break
@@ -157,7 +157,7 @@ def main():
                                 led_change(occupation_status)
                                 xbee_transmit("0")
                                 print ("Measured Distance = %.1f cm" % a)
-                                # print (occupation_status)
+                                print ("Status changed, now occupied: ",occupation_status)
                                 break
                             else: 
                                 break
