@@ -30,7 +30,7 @@ def main():
 
     
     device = XBeeDevice(PORT, BAUD_RATE)
-
+    MID_FLOOR = "0"
      
     headers = {"Content-type": "application/json"}
     conn = http.client.HTTPConnection("192.168.1.107:5000")
@@ -41,15 +41,15 @@ def main():
                                      xbee_message.data.decode()))
             MAC = xbee_message.remote_device.get_64bit_addr() 
             stat = xbee_message.data.decode()
-            conn.request("GET", "/v1/parking/0")
+            conn.request("GET", f"/v1/parking/{MID_FLOOR}")
             resp = conn.getresponse()
             data = json.loads(resp.read())
             floor = data["floor"]
             params = json.dumps({"place":str(MAC),"status":int(stat)})
             if MAC in floor.keys():
-                conn.request("POST","/v1/parking/0", params, headers)
+                conn.request("POST",f"/v1/parking/{MID_FLOOR}", params, headers)
             else:
-                conn.request("POST","/v1/parking/0/"+str(MAC), params, headers)
+                conn.request("POST",f"/v1/parking/{MID_FLOOR}/"+str(MAC), params, headers)
             response = conn.getresponse()
         device.add_data_received_callback(data_receive_callback)
         print("Waiting for data...\n")
